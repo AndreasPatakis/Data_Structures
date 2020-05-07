@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
+#include <list>
 
 
 using namespace std;
@@ -231,13 +232,6 @@ public:
         }
     }
 
-    void displayFromFinish() {
-        node* temp = tail;
-        while (temp != NULL) {
-            // kati
-            temp = temp->previous;
-        }
-    }
 
     double fRand(double fMin, double  fMax)
     {
@@ -295,11 +289,18 @@ public:
     
 };
 
+class day {
+public:
+    list<linked_list> people;
+
+     day(){}
+
+};
+
 int main()
 {
-  
-    linked_list ll;
-    double dmin, dmax, tx, ty;
+    list<day> days;
+    double dmin, dmax;
     
     //to plegma einai tetragwno ara min : xmin=ymin kai max: xmax=ymax
 
@@ -309,8 +310,6 @@ int main()
          cout << "Please enter the max width : ";
          cin >> dmax;
          if (dmax > dmin) {
-             ll.setMaxCoordinate(dmax);
-             ll.setMinCoordinate(dmin);
              break;
          }
          else {
@@ -320,13 +319,36 @@ int main()
          }
      }
      
+     //d is equal to the number of days we want to create
+     for (int d = 0; d <= 1; d++) {
+         day day;
 
-      //  i == 2.880 because a day has 1.440 minuutes and we create a new node every half a minute(30 sec)
-     srand(time(NULL));
-     for (int i = 0; i < 2880; i++) {
-         ll.add_node();
+         //j is equal to the number of users we want to create
+         for (int j = 0; j <= 2; j++) {
+             linked_list person;
+             person.setMaxCoordinate(dmax);
+             person.setMinCoordinate(dmin);
+
+             //  i == 2.880 because a day has 1.440 minuutes and we create a new node every half a minute(30 sec)
+             srand(time(NULL));
+             for (int i = 0; i < 100; i++) {
+                 person.add_node();
+             }
+             day.people.push_back(person);
+         }
+         days.push_back(day);
      }
-     ll.displayFromStart();
+     
+    
+
+     for (day day : days) {
+         cout << "\n------------------------------ NEW DAY ----------------------------- \n";
+         for (linked_list person : day.people) {
+             cout << "\n------------------------------ NEW PERSON ----------------------------- \n";
+             person.displayFromStart();
+         }
+     }
+    
 
 
     
