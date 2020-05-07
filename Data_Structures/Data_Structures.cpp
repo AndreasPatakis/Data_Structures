@@ -90,7 +90,7 @@ public:
                 tmp->y = coor[1];
                 //When destination is completed, give another one
                 if (tmp->x == to_string(getDestinationX()) && tmp->y == to_string(getDestinationY())) {
-                    tmp->notmoving = 5;//rand() % 40 + 120;
+                    tmp->notmoving = rand() % 40 + 120;
                     setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
                     setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
                     tmp->moving_to = "MOVING TO: (" + to_string(getDestinationX())+ " : " + to_string(getDestinationY()) + ")";
@@ -263,7 +263,11 @@ public:
 
 
     node return_tail() {
-        node* tmp = tail;
+        return *tail;
+    }
+
+    node return_head() {
+        node* tmp = head;
         return *tmp;
     }
 
@@ -349,6 +353,24 @@ public:
 
 };
 
+bool Possible_Covid19_Infection(linked_list person, int day_num, day covid19_patients[15]) {
+    bool danger_zone = false;
+    double R = 2;
+    int min_time_nearby = 15, max_minutes_after = 240;
+
+    for (int p = 0; p < 15;p++) {
+        node* patient = covid19_patients[day_num].people[p].return_head().next;
+        node* user = person.return_head().next;
+        while (patient != NULL) {
+            //do stuff
+            patient = patient->next;
+        }
+    }
+    
+}
+
+
+
 
 
 int main()
@@ -358,7 +380,9 @@ int main()
     string to_arrive_x, to_arrive_y,current_x,current_y;
     //Number of days we want to use
     day days[7];
-    
+    day patients_days[7];
+ 
+
     //to plegma einai tetragwno ara min : xmin=ymin kai max: xmax=ymax
      while (true) {
          cout << "Please enter the min width : ";
@@ -375,8 +399,6 @@ int main()
          }
      }
      
-
-
      //p is equal to the number of people we have
      for (int p = 0; p <= 100; p++) {  
          arrived = true;
@@ -408,6 +430,34 @@ int main()
          }
      }
    
-   
+     //Some covid19 patients
+     for (int p = 0; p <= 14; p++) {
+         arrived = true;
+
+         for (int d = 0; d <= 6; d++) {
+             linked_list person;
+             person.setMaxCoordinate(dmax);
+             person.setMinCoordinate(dmin);
+
+             srand(time(NULL));
+             for (int i = 0; i < 2880; i++) {
+                 if (arrived) {
+                     person.add_node();
+                 }
+                 else {
+                     person.add_node(current_x, current_y, to_arrive_x, to_arrive_y);
+                     arrived = true;
+                 }
+             }
+             if ((person.get_position_x() != to_string(person.getDestinationX())) || (person.get_position_y() != to_string(person.getDestinationY()))) {
+                 current_x = person.get_position_x();
+                 current_y = person.get_position_y();
+                 to_arrive_x = to_string(person.getDestinationX());
+                 to_arrive_y = to_string(person.getDestinationY());
+                 arrived = false;
+             }
+             patients_days[d].people[p] = person;
+         }
+     }
 }
 
