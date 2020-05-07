@@ -4,11 +4,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <stdexcept>
-#include <list>
 
 
 using namespace std;
-
 
 
 struct node {
@@ -92,7 +90,7 @@ public:
                 tmp->y = coor[1];
                 //When destination is completed, give another one
                 if (tmp->x == to_string(getDestinationX()) && tmp->y == to_string(getDestinationY())) {
-                    tmp->notmoving = rand() % 40 + 120;
+                    tmp->notmoving = 5;//rand() % 40 + 120;
                     setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
                     setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
                     tmp->moving_to = "MOVING TO: (" + to_string(getDestinationX())+ " : " + to_string(getDestinationY()) + ")";
@@ -101,6 +99,49 @@ public:
             }
            
             
+
+            //Setting linked list
+            tail->next = tmp;
+            (tail->next)->previous = tail;
+            tail = tail->next;
+        }
+    }
+
+    void add_node(string are_x, string are_y, string to_x, string to_y)
+    {
+
+        string* timer;
+        string* coor;
+        node* tmp = new node;
+        tmp->next = NULL;
+        tmp->previous = NULL;
+
+
+
+        if (head == NULL)
+        {
+            tmp->hours = "00";
+            tmp->minutes = "00";
+            tmp->seconds = "00";
+            setDestinationX(atof(to_x.c_str()));
+            setDestinationY(atof(to_y.c_str()));
+            tmp->x = are_x;
+            tmp->y = are_y;
+            head = tmp;
+            tail = tmp;
+        }
+        else
+        {
+            //Setting timestamp
+            timer = get_time(tail->hours, tail->minutes, tail->seconds);
+            tmp->hours = timer[0];
+            tmp->minutes = timer[1];
+            tmp->seconds = timer[2];
+
+            //Setting coordinates
+            coor = get_coordinates(tail->x, tail->y);
+            tmp->x = coor[0];
+            tmp->y = coor[1];
 
             //Setting linked list
             tail->next = tmp;
@@ -221,6 +262,10 @@ public:
     }
 
 
+    node return_tail() {
+        node* tmp = tail;
+        return *tmp;
+    }
 
     void displayFromStart() {
         node* temp = head;
@@ -286,24 +331,35 @@ public:
          return this->endY;
      }
 
+     string get_position_x() {
+         return tail->x;
+     }
+
+     string get_position_y() {
+         return tail->y;
+     }
     
 };
 
 class day {
 public:
-    list<linked_list> people;
-
-     day(){}
+    linked_list people[100];
+     day(){
+     }
 
 };
 
+
+
 int main()
 {
-    list<day> days;
     double dmin, dmax;
+    bool arrived;
+    string to_arrive_x, to_arrive_y,current_x,current_y;
+    //Number of days we want to use
+    day days[7];
     
     //to plegma einai tetragwno ara min : xmin=ymin kai max: xmax=ymax
-
      while (true) {
          cout << "Please enter the min width : ";
          cin >> dmin;
@@ -319,40 +375,39 @@ int main()
          }
      }
      
-     //d is equal to the number of days we want to create
-     for (int d = 0; d <= 1; d++) {
-         day day;
 
-         //j is equal to the number of users we want to create
-         for (int j = 0; j <= 2; j++) {
+
+     //p is equal to the number of people we have
+     for (int p = 0; p <= 100; p++) {  
+         arrived = true;
+         //d is equal to the number of days we have
+         for (int d = 0; d <= 6; d++) {
              linked_list person;
              person.setMaxCoordinate(dmax);
              person.setMinCoordinate(dmin);
 
              //  i == 2.880 because a day has 1.440 minuutes and we create a new node every half a minute(30 sec)
              srand(time(NULL));
-             for (int i = 0; i < 100; i++) {
-                 person.add_node();
+             for (int i = 0; i < 2880; i++) {
+                 if (arrived){
+                     person.add_node();
+                 }
+                 else {
+                     person.add_node(current_x,current_y,to_arrive_x, to_arrive_y);
+                     arrived = true;
+                 }
              }
-             day.people.push_back(person);
-         }
-         days.push_back(day);
-     }
-     
-    
-
-     for (day day : days) {
-         cout << "\n------------------------------ NEW DAY ----------------------------- \n";
-         for (linked_list person : day.people) {
-             cout << "\n------------------------------ NEW PERSON ----------------------------- \n";
-             person.displayFromStart();
+             if ((person.get_position_x() != to_string(person.getDestinationX())) || (person.get_position_y() != to_string(person.getDestinationY()))) {
+                 current_x = person.get_position_x();
+                 current_y = person.get_position_y();
+                 to_arrive_x = to_string(person.getDestinationX());
+                 to_arrive_y = to_string(person.getDestinationY());
+                 arrived = false;
+             }
+             days[d].people[p] = person;
          }
      }
-    
-
-
-    
    
-
+   
 }
 
