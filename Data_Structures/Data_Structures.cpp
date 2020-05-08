@@ -262,13 +262,12 @@ public:
     }
 
 
-    node return_tail() {
-        return *tail;
+    node* return_tail() {
+        return tail;
     }
 
-    node return_head() {
-        node* tmp = head;
-        return *tmp;
+    node* return_head() {
+        return head;
     }
 
     void displayFromStart() {
@@ -353,18 +352,86 @@ public:
 
 };
 
-bool Possible_Covid19_Infection(linked_list person, int day_num, day covid19_patients[15]) {
+bool Possible_Covid19_Infection(linked_list person[7], int day_num, day covid19_patients[7]) {
     bool danger_zone = false;
-    double R = 2;
+    double R = 2,user_x,user_y,patient_x,patient_y;
     int min_time_nearby = 15, max_minutes_after = 240;
+    int time_nearby;
 
     for (int p = 0; p < 15;p++) {
-        node* patient = covid19_patients[day_num].people[p].return_head().next;
-        node* user = person.return_head().next;
-        while (patient != NULL) {
-            //do stuff
+        time_nearby = 0;
+        node* patient = covid19_patients[day_num].people[p].return_head();
+        node* user = person[day_num].return_head();
+        while (user != NULL) {
+            //temp patient and user
+            node* temp_patient = patient;
+            node* temp_user = user;
+            //setting user and patient coords
+            user_x = atof(user->x.c_str());
+            user_y = atof(user->y.c_str());
+            patient_x = atof(patient->x.c_str());
+            patient_y = atof(patient->y.c_str());
+            //checks if the user was in patients R at most 4 hours later, or less
+            for (int i = 0; i < max_minutes_after * 2; i++) {
+                user_x = atof(user->x.c_str());
+                user_y = atof(user->y.c_str());
+                //check R
+                if (abs(patient_x - user_x) <= R || abs(patient_y - user_y) <= R) {
+                    time_nearby += 1;
+                }
+                temp_user = temp_user->next;
+            }
+            if (time_nearby >= max_minutes_after * 2) {
+                danger_zone = true;
+                return danger_zone;
+            }
+            user = user->next;
             patient = patient->next;
         }
+        //checks if user has arrived to destination by the end of the day. If not, it continues searching and the next day
+        //IT DAYS THE EXACT SAME THING AS ABOVE, JUST FOR THE NEXT DAY UNTIL USER ARRIVES AT DESTINATION
+        if (day_num < 7) {
+            node* patient = covid19_patients[day_num+1].people[p].return_head();
+            node* user = person[day_num].return_head();
+            while ((person[day_num].get_position_x() != to_string(person[day_num].getDestinationX())) || (person[day_num].get_position_y() != to_string(person[day_num].getDestinationY()))) {
+                //temp patient and user
+                node* temp_patient = patient;
+                node* temp_user = user;
+                //setting user and patient coords
+                user_x = atof(user->x.c_str());
+                user_y = atof(user->y.c_str());
+                patient_x = atof(patient->x.c_str());
+                patient_y = atof(patient->y.c_str());
+                //checks if the user was in patients R at most 4 hours later, or less
+                for (int i = 0; i < max_minutes_after * 2; i++) {
+                    user_x = atof(user->x.c_str());
+                    user_y = atof(user->y.c_str());
+                    //check R
+                    if (abs(patient_x - user_x) <= R || abs(patient_y - user_y) <= R) {
+                        time_nearby += 1;
+                    }
+                    //it must stop when user reaches his destination
+                    if ((person[day_num].get_position_x() == to_string(person[day_num].getDestinationX())) && (person[day_num].get_position_y() == to_string(person[day_num].getDestinationY()))) {
+                        if (time_nearby >= max_minutes_after * 2) {
+                            danger_zone = true;
+                            return danger_zone;
+                        }
+                        else { break; }
+                    }
+                    else {
+                        temp_user = temp_user->next;
+                    }
+                    
+                }
+                if (time_nearby >= max_minutes_after * 2) {
+                    danger_zone = true;
+                    return danger_zone;
+                }
+                user = user->next;
+                patient = patient->next;
+            }
+        }
+       
     }
     
 }
@@ -381,24 +448,8 @@ int main()
     //Number of days we want to use
     day days[7];
     day patients_days[7];
- 
-
-    //to plegma einai tetragwno ara min : xmin=ymin kai max: xmax=ymax
-     while (true) {
-         cout << "Please enter the min width : ";
-         cin >> dmin;
-         cout << "Please enter the max width : ";
-         cin >> dmax;
-         if (dmax > dmin) {
-             break;
-         }
-         else {
-             cout << "\nMaximum value must be greater than the minimum.\nPLease type again:\n\n";
-             dmin = NULL;
-             dmax = NULL;
-         }
-     }
-     
+    linked_list random_user[7];
+       
      //p is equal to the number of people we have
      for (int p = 0; p <= 100; p++) {  
          arrived = true;
@@ -430,7 +481,7 @@ int main()
          }
      }
    
-     //Some covid19 patients
+     //------------------------SOME COVID19 PATIENTS-----------------------------------
      for (int p = 0; p <= 14; p++) {
          arrived = true;
 
@@ -459,5 +510,34 @@ int main()
              patients_days[d].people[p] = person;
          }
      }
+     //------------------------RANDOM USER FOR 7 DAYS-----------------------------------
+     int pos = rand() % 99;
+     for (int i = 0; i < 7; i++) {
+         random_user[i] = days[i].people[pos];
+     }
+
+
+
+
+
+     //--------------------------------- MAIN -----------------------------------------
+     while (true) {
+         cout << "Please enter the min width : ";
+         cin >> dmin;
+         cout << "Please enter the max width : ";
+         cin >> dmax;
+         if (dmax > dmin) {
+             break;
+         }
+         else {
+             cout << "\nMaximum value must be greater than the minimum.\nPLease type again:\n\n";
+             dmin = NULL;
+             dmax = NULL;
+         }
+     }
+
+     
+     
+
 }
 
