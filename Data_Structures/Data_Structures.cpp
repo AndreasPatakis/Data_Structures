@@ -451,13 +451,9 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num,day covid19_p
     return false;
 }
 
-
-
-
 //Number of days we want to use
 day days[4];
 day patients_days[4];
-
 
 
  void create_routes(double dmin, double dmax, int users, string array ) {
@@ -503,53 +499,209 @@ day patients_days[4];
     }
 }
 
- bool function1_menu(){
+ void function1_menu(){
+     string input;
      int pos;
      linked_list random_user[4];
-     cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.(Press 0 if you want to exit this function).\n ";
      while (true) {
-         cin >> pos;
-         if (pos == 0) {
-             return false;
+         cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.\n ";
+         while (true) {
+             cin >> pos;
+             if (pos > 40 || pos < 1) {
+                 cout << "Please choose a number between 1 and 40.\n";
+             }
+             else {
+                 pos = pos - 1;
+                 break;
+             }
          }
-         else if (pos > 40 || pos < 1) {
-             cout << "Please choose a number between 1 and 40.\n";
+
+         for (int i = 0; i < 4; i++) {
+             random_user[i] = days[i].people[pos];
+         }
+
+         int choose_day;
+         cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
+         while (true) {
+             cin >> choose_day;
+             if (choose_day > 4 || choose_day < 1) {
+                 cout << "Please choose a number between 1 and 4.\n";
+             }
+             else {
+                 choose_day = choose_day - 1;
+                 break;
+             }
+         }
+
+         cout << "And the answer is...\n";
+         if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
+             cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
          }
          else {
-             pos = pos - 1;
-             break;
+             cout << "\n The user was not found near a Covid19 patient, no reason to panic.\n";
          }
-     }
-
-     for (int i = 0; i < 4; i++) {
-         random_user[i] = days[i].people[pos];
-     }
-
-     int choose_day;
-     cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
-     while (true) {
-         cin >> choose_day;
-         if (choose_day > 4 || choose_day < 1) {
-             cout << "Please choose a number between 1 and 4.\n";
+         cout << "\nDo you want to repeat this function again? [y/n]\n";
+         cin >> input;
+         if (input == "y" || input == "yes") {
+             //pass
+         }
+         else if (input == "n" || input == "no") {
+             break;
          }
          else {
-             choose_day = choose_day - 1;
-             break;
+             cout << "\nPlease answer y for yes or n for no.\n";
          }
-     }
 
-     cout << "And the answer is...\n";
-     if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
-         cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
      }
-     else {
-         cout << "\n The user was not found near a Covid19 patient, no reason to panic.\n";
-     }
-     return true;
+     
  }
 
-
+ int Find_Crowded_Places(int day_num, int time_interval[2], double square_region[2], int min_stay_duration) {
+     int user_inside = 0;
+     int duration;
+     int hours = time_interval[1] - time_interval[0];
+     string start_time = to_string(time_interval[0]), finish_time = to_string(time_interval[1]);
+     double x1, x2, y1, y2, user_x, user_y;
+     if (time_interval[0] < 9) { start_time = "0" + to_string(time_interval[0]); }
+     if (time_interval[1] < 9) { finish_time = "0" + to_string(time_interval[1]); }
+     for (int p = 0; p < 40; p++) {
+         cout << "\n------------------------ NEW USER -----------------------------------\n";
+         x1 = square_region[0];
+         x2 = square_region[1];
+         y1 = square_region[0];
+         y2 = square_region[1];
+         if (x1 > x2) { x2 = square_region[0]; x1 = square_region[1]; }
+         if (y1 > y2) { y1 = y2; y1 = square_region[1]; }
+         duration = min_stay_duration * 2;
+         node* user = days[day_num].people[p].return_head();
+         while (user->hours != start_time) {
+             user = user->next;
+         }
+         int i = 0;
+        while(i < hours*120 && user != NULL) {
+             cout << "Time: " << user->hours << ":" << user->minutes << ":" << user->seconds << " | User_X: " << user->x << " | User_Y: " << user->y << " | X: " << x1 << " | Y:" << x2 << " | Duration: " << duration << " | Inside: " << user_inside<<"\n";
+             user_x = atof(user->x.c_str());
+             user_y = atof(user->y.c_str());
+             if ((user_x >= x1 && user_x <= x2) && (user_y >= y1 && user_y <= y2)) {
+                 duration -= 1;
+             }
+             if (duration == 0) {
+                 user_inside += 1;
+                 break;
+             }
+             user = user->next;
+             i += 1;
+         }
+     }
+     return user_inside;
+ }
  
+ void function2_menu() {
+     int time_interval[2], day_num, min_stay_duration, results;
+     double square_region[2];
+     string input;
+     while (true) {
+         cout << "\nIt's time to see how many users where found in a given square region of interest.\n";
+         while (true) {
+             cout << "\nTo begin with, give the X coordinate of the square region you want to search in.(Double precision number.)\n";
+             cin >> input;
+             try {
+                 square_region[0] = stod(input);
+                 break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give a double precision number.\n";
+             }
+         }
+         while (true) {
+             cout << "\nNow give the Y coordinate of the square region you want to search in.(Double precision number.)\n";
+             cin >> input;
+             try {
+                 square_region[1] = stod(input);
+                 break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give a double precision number.\n";
+             }
+         }
+         while (true) {
+             cout << "\nGive the an hour to start searching from. It must be a number between 0 - 23( which means 00:00:00 - 23:59:30).\n";
+             cin >> input;
+             try {
+                 time_interval[0] = stoi(input);
+                 if (time_interval[0] < 0 || time_interval[1] > 23) {
+                     cout << "\nTime must be a number between 0 - 23( which means 00:00:00 - 23:59:30).Please try again\n";
+                 }
+                 else {
+                     break;
+                 }   
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an interger.\n";
+             }
+         }
+         while (true) {
+             cout << "\nNow give the the hour of to stop searching. It must be a number between 0 - 23( which means 00:00:00 - 23:59:30).\n";
+             cin >> input;
+             try {
+                 time_interval[1] = stoi(input);
+                 if (time_interval[0] < 0 || time_interval[1] > 23) {
+                     cout << "\nTime must be a number between 0 - 23( which means 00:00:00 - 23:59:30).Please try again\n";
+                     if (time_interval[1] <= time_interval[0]) {
+                         cout << "\n The ending hour must be greater than the starting one. Please try again.\n";
+                     }
+                 }
+                 else {
+                     break;
+                 }
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an interger.\n";
+             }
+         }
+         while (true) {
+             cout << "\nGive a minimum stay duration(in minutes).\n";
+             cin >> input;
+             try {
+                 min_stay_duration = stoi(input);
+                 break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an interger.\n";
+             }
+         }
+         while (true) {
+             cout << "\nLastly, choose a day between 1-4 in which the search will take place.\n";
+             cin >> input;
+             try {
+                 day_num = stoi(input);
+                 if (day_num > 4 || day_num < 1) {
+                     cout << "\n Give a number between 1 and 4. Please try again.\n";
+                 }
+                 else {
+                     break;
+                 }
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an interger.\n";
+             }
+         }
+         results = Find_Crowded_Places(day_num, time_interval, square_region, min_stay_duration);
+         cout << "\n" << results << " where found inside the square region, day and time interval you gave.\n";
+         cout << "\nDo you want to repeat this function again? [y/n]\n";
+         cin >> input;
+         if (input == "y" || input == "yes") {
+             //pass
+         }
+         else if (input == "n" || input == "no") {
+             break;
+         }
+         else {
+             cout << "\nPlease answer y for yes or n for no.\n";
+         }
+     }
+   
+ }
 
 int main()
 {
@@ -558,7 +710,6 @@ int main()
     int pos;
     string to_arrive_x, to_arrive_y,current_x,current_y;  
     
-       
 
     //--------------------------------- <MAIN> -----------------------------------------
 
@@ -589,27 +740,15 @@ int main()
     
     //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
     
-    while (true) {
-        if (!function1_menu()) {
-            break;
-        }
-    }
+    //function1_menu();
    
+    //------------------------------------------------------- FUNCTION 2---------------------------------------------------------
 
-    
-
+    function2_menu();
 
     //--------------------------------- <\MAIN> -----------------------------------------
-
-
-
-
+    
    
-        
-
-
-     
-     
 
 }
 
