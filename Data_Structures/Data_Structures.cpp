@@ -90,7 +90,7 @@ public:
                 tmp->y = coor[1];
                 //When destination is completed, give another one
                 if (tmp->x == to_string(getDestinationX()) && tmp->y == to_string(getDestinationY())) {
-                    tmp->notmoving = rand() % 40 + 120;
+                    tmp->notmoving = 5;//rand() % 40 + 120;
                     setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
                     setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
                     tmp->moving_to = "MOVING TO: (" + to_string(getDestinationX())+ " : " + to_string(getDestinationY()) + ")";
@@ -352,15 +352,15 @@ public:
 
 };
 
-bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_patients[4]) {
+bool Possible_Covid19_Infection(linked_list person[4], int day_num,day covid19_patients[4]) {
     bool danger_zone = false;
     double R = 1,user_x,user_y,patient_x,patient_y;
-    int min_time_nearby = 30, max_minutes_after = 240;
+    int min_time_nearby = 15, max_minutes_after = 100;
     int time_nearby;
     int counter = 0;
 
-    for (int p = 0; p < 5;p++) {
-       // cout << "---------------------NEW PATIENT----------------------------\n";
+    for (int p = 0; p < 40;p++) {
+        //cout << "---------------------NEW PATIENT----------------------------\n";
         time_nearby = 0;
         counter = 0;
         node* patient = covid19_patients[day_num].people[p].return_head();
@@ -377,7 +377,7 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_
             //checks if the user was in patients R at most 4 hours later, or less
             int i = 0;
             while(i<max_minutes_after*2 && temp_user!=NULL) {
-               // cout << "Node: " << counter<< " | i: " << i << " | User_X: " << user_x << " | User_Y: " << user_y << " | Patient_X: " << patient_x << " | Patient_Y: " << patient_y << " | Time_NearBy: " << time_nearby << "\n";
+                //cout << "Node: " << counter<< " | i: " << i << " | User_X: " << user_x << " | User_Y: " << user_y << " | Patient_X: " << patient_x << " | Patient_Y: " << patient_y << " | Time_NearBy: " << time_nearby << "\n";
                 user_x = atof(temp_user->x.c_str());
                 user_y = atof(temp_user->y.c_str());
                 //check R
@@ -402,8 +402,9 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_
         if (day_num < 3) {
             node* patient = covid19_patients[day_num+1].people[p].return_head();
             node* user = person[day_num+1].return_head();
-            //cout << "-----------------------NEXT DAY--------------------------\n";
+            
             while (((patient->x != to_string(person[day_num+1].getDestinationX())) || (patient->y != to_string(person[day_num+1].getDestinationY()))) && (user!=NULL && patient != NULL)) {
+                //cout << "-----------------------NEXT DAY--------------------------\n";
                 //temp patient and user
                 node* temp_patient = patient;
                 node* temp_user = user;
@@ -415,7 +416,7 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_
                 //checks if the user was in patients R at most 4 hours later, or less
                 int i = 0;
                 while (i < max_minutes_after * 2 && temp_user != NULL) {
-               // cout << "Node: " << counter << " | i: " << i << " | User_X: " << user_x << " | User_Y: " << user_y << " | Dest_X: " << person[day_num].getDestinationX() << " | Dest_Y: " << person[day_num].getDestinationY() << " | Time_NearBy: " << time_nearby << "\n";
+                //cout << "Node: " << counter << " | i: " << i << " | User_X: " << user_x << " | User_Y: " << user_y << " | Dest_X: " << person[day_num].getDestinationX() << " | Dest_Y: " << person[day_num].getDestinationY() << " | Time_NearBy: " << time_nearby << "\n";
                     user_x = atof(temp_user->x.c_str());
                     user_y = atof(temp_user->y.c_str());
                     //check R
@@ -425,16 +426,15 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_
                         break;
                     }
                     //it must stop when user reaches his destination
-                    if ((user->x == to_string(person[day_num].getDestinationX())) && (user->y == to_string(person[day_num].getDestinationY()))) {
+                    if ((patient->x == to_string(person[day_num].getDestinationX())) && (patient->y == to_string(person[day_num].getDestinationY()))) {
                         if (time_nearby >= min_time_nearby * 2) {
                             danger_zone = true;
                             return danger_zone;
                         }
-                        else { danger_zone = false; return danger_zone; }
                     }
                     else {
                         temp_user = temp_user->next;
-                        i += 1;
+                        i += 1;           
                     }
                     
                 }
@@ -446,7 +446,7 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_
                 patient = patient->next;
             }
         }
-       
+        cout << "\n The user you gave had no interaction with patient: " << p+1 << ". There are "<<40-(p+1)<<" left to check. Please wait...\n";
     }
     return false;
 }
@@ -454,73 +454,16 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num, day covid19_
 
 
 
+//Number of days we want to use
+day days[4];
+day patients_days[4];
 
-int main()
-{
-    double dmin, dmax;
+
+
+ void create_routes(double dmin, double dmax, int users, string array ) {
     bool arrived;
-    string to_arrive_x, to_arrive_y,current_x,current_y;
-    int pos;
-    //Number of days we want to use
-    day days[4];
-    day patients_days[4];
-    linked_list random_user[4];
-       
-
-    //--------------------------------- <MAIN> -----------------------------------------
-
-
-    while (true) {
-        cout << "Please enter the min width : ";
-        cin >> dmin;
-        cout << "Please enter the max width : ";
-        cin >> dmax;
-        if (dmax > dmin) {
-            cout << "\nRoutes are being created. Please wait...\n";
-            break;
-        }
-        else {
-            cout << "\nMaximum value must be greater than the minimum.\nPLease type again:\n\n";
-            dmin = NULL;
-            dmax = NULL;
-        }
-    }
-
-    //---------------------------------------------------- CREATING 40 USERS --------------------------------------------------------------------------------
-
-    //p is equal to the number of people we have
-    for (int p = 0; p < 40; p++) {
-        arrived = true;
-        //d is equal to the number of days we have
-        for (int d = 0; d < 4; d++) {
-            linked_list person;
-            person.setMaxCoordinate(dmax);
-            person.setMinCoordinate(dmin);
-
-            //  i == 2.880 because a day has 1.440 minuutes and we create a new node every half a minute(30 sec)
-            for (int i = 0; i < 2880; i++) {
-                if (arrived) {
-                    person.add_node();
-                }
-                else {
-                    person.add_node(current_x, current_y, to_arrive_x, to_arrive_y);
-                    arrived = true;
-                }
-            }
-            if ((person.get_tail_x() != to_string(person.getDestinationX())) || (person.get_tail_y() != to_string(person.getDestinationY()))) {
-                current_x = person.get_tail_x();
-                current_y = person.get_tail_y();
-                to_arrive_x = to_string(person.getDestinationX());
-                to_arrive_y = to_string(person.getDestinationY());
-                arrived = false;
-            }
-            days[d].people[p] = person;
-        }
-    }
-
-    //-------------------------------------------SOME COVID19 PATIENTS (5)--------------------------------------------------
-
-    for (int p = 0; p < 5; p++) {
+    string current_x, current_y, to_arrive_x, to_arrive_y;
+    for (int p = 0; p < users; p++) {
         arrived = true;
         current_x = "";
         current_y = "";
@@ -548,49 +491,103 @@ int main()
                 to_arrive_y = to_string(person.getDestinationY());
                 arrived = false;
             }
-            patients_days[d].people[p] = person;
-          
+            if (array == "covid19") {
+                patients_days[d].people[p] = person;
+            }
+            else {
+                days[d].people[p] = person;
+            }
+           
+
+        }
+    }
+}
+
+
+
+ 
+
+int main()
+{
+    double dmin, dmax;
+    bool arrived;
+    int pos;
+    string to_arrive_x, to_arrive_y,current_x,current_y;  
+    linked_list random_user[4];
+    
+       
+
+    //--------------------------------- <MAIN> -----------------------------------------
+
+
+    while (true) {
+        cout << "Please enter the min width : ";
+        cin >> dmin;
+        cout << "Please enter the max width : ";
+        cin >> dmax;
+        if (dmax > dmin) {
+            cout << "\nRoutes are being created. This proccess may take some minutes. Please wait...\n";
+            break;
+        }
+        else {
+            cout << "\nMaximum value must be greater than the minimum.\nPLease type again:\n\n";
+            dmin = NULL;
+            dmax = NULL;
         }
     }
 
+    //---------------------------------------------------- CREATING 40 USERS --------------------------------------------------------------------------------
 
+    create_routes(dmin, dmax, 40, "users");
+    
+    //-------------------------------------------SOME COVID19 PATIENTS (5)--------------------------------------------------
+
+    create_routes(dmin, dmax, 40, "covid19");
+    
     //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
  
-    cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.\n ";
     while (true) {
-        cin >> pos;
-        if (pos > 40 || pos < 1) {
-            cout << "Please choose a number between 1 and 40.\n";
+        cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.(Press 0 if you want to exit this function)\n ";
+        while (true) {
+            cin >> pos;
+            if (pos == 0) {
+                break;
+            }
+            else if (pos > 40 || pos < 1) {
+                cout << "Please choose a number between 1 and 40.\n";
+            }
+            else {
+                pos = pos - 1;
+                break;
+            }
+        }if (pos == 0) { break; }
+        int choose_day;
+        cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
+        while (true) {
+            cin >> choose_day;
+            if (choose_day > 4 || choose_day < 1) {
+                cout << "Please choose a number between 1 and 4.\n";
+            }
+            else {
+                choose_day = choose_day - 1;
+                break;
+            }
+        }
+
+        for (int i = 0; i < 4; i++) {
+            random_user[i] = days[i].people[pos];
+        }
+
+
+        cout << "And the answer is...\n";
+        if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
+            cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
         }
         else {
-            pos = pos - 1;
-            break;
+            cout << "\n The user was not found near a Covid19 patient, no reason to panic.\n";
         }
     }
-    int choose_day;
-    cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
-    while (true) {
-        cin >> choose_day;
-        if (choose_day > 4 || choose_day < 1) {
-            cout << "Please choose a number between 1 and 4.\n";
-        }
-        else {
-            choose_day = choose_day - 1;
-            break;
-        }
-    }
-
-    for (int i = 0; i < 4; i++) {
-        random_user[i] = days[i].people[pos];
-    }
-
-    cout << "And the answer is...\n";
-    if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
-        cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
-    }
-    else {
-        cout << "\n The user was not found near a Covid19 patient, no reason to panic.\n";
-    }
+   
 
     
 
