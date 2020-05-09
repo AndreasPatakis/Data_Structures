@@ -503,6 +503,50 @@ day patients_days[4];
     }
 }
 
+ bool function1_menu(){
+     int pos;
+     linked_list random_user[4];
+     cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.(Press 0 if you want to exit this function).\n ";
+     while (true) {
+         cin >> pos;
+         if (pos == 0) {
+             return false;
+         }
+         else if (pos > 40 || pos < 1) {
+             cout << "Please choose a number between 1 and 40.\n";
+         }
+         else {
+             pos = pos - 1;
+             break;
+         }
+     }
+
+     for (int i = 0; i < 4; i++) {
+         random_user[i] = days[i].people[pos];
+     }
+
+     int choose_day;
+     cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
+     while (true) {
+         cin >> choose_day;
+         if (choose_day > 4 || choose_day < 1) {
+             cout << "Please choose a number between 1 and 4.\n";
+         }
+         else {
+             choose_day = choose_day - 1;
+             break;
+         }
+     }
+
+     cout << "And the answer is...\n";
+     if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
+         cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
+     }
+     else {
+         cout << "\n The user was not found near a Covid19 patient, no reason to panic.\n";
+     }
+     return true;
+ }
 
 
  
@@ -513,7 +557,6 @@ int main()
     bool arrived;
     int pos;
     string to_arrive_x, to_arrive_y,current_x,current_y;  
-    linked_list random_user[4];
     
        
 
@@ -545,46 +588,10 @@ int main()
     create_routes(dmin, dmax, 40, "covid19");
     
     //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
- 
+    
     while (true) {
-        cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.(Press 0 if you want to exit this function)\n ";
-        while (true) {
-            cin >> pos;
-            if (pos == 0) {
-                break;
-            }
-            else if (pos > 40 || pos < 1) {
-                cout << "Please choose a number between 1 and 40.\n";
-            }
-            else {
-                pos = pos - 1;
-                break;
-            }
-        }if (pos == 0) { break; }
-        int choose_day;
-        cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
-        while (true) {
-            cin >> choose_day;
-            if (choose_day > 4 || choose_day < 1) {
-                cout << "Please choose a number between 1 and 4.\n";
-            }
-            else {
-                choose_day = choose_day - 1;
-                break;
-            }
-        }
-
-        for (int i = 0; i < 4; i++) {
-            random_user[i] = days[i].people[pos];
-        }
-
-
-        cout << "And the answer is...\n";
-        if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
-            cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
-        }
-        else {
-            cout << "\n The user was not found near a Covid19 patient, no reason to panic.\n";
+        if (!function1_menu()) {
+            break;
         }
     }
    
