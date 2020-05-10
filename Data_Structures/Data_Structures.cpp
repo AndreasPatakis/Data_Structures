@@ -495,9 +495,12 @@ public:
      }
 };
 
+double R;
+int CURRENT_DAY;
+
 bool Possible_Covid19_Infection(linked_list person[4], int day_num,day covid19_patients[4]) {
     bool danger_zone = false;
-    double R = 1,user_x,user_y,patient_x,patient_y;
+    double user_x,user_y,patient_x,patient_y;
     int min_time_nearby = 15, max_minutes_after = 100;
     int time_nearby;
     int counter = 0;
@@ -676,6 +679,20 @@ day patients_days[4];
                  std::cerr << "\nInvalid argument: Please give an integer.\n";
              }
          }
+         while (true) {
+             cout << "\nPlease enter radius. It must be greater than: 0 and smaller than: " << dmax - dmin<<".\n";
+             cin >> input;
+             try {
+                 R = stod(input);
+                 if (R < 0 && R > dmax - dmin) {
+                     cout << "\n Radius must be greater than: 0 and smaller than:"  << dmax - dmin<<".\n";
+                 }
+                 break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an integer.\n";
+             }
+         }
          if (dmax > dmin) {
              cout << "\nRoutes are being created. This proccess may take some minutes. Please wait...\n";
              break;
@@ -685,6 +702,7 @@ day patients_days[4];
              dmin = NULL;
              dmax = NULL;
          }
+
      }
  }
 
@@ -716,28 +734,8 @@ day patients_days[4];
              random_user[i] = days[i].people[pos];
          }
 
-         int choose_day;
-         cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
-         while (true) {
-             cin >> input;
-             try {
-                 choose_day = stod(input);
-                 if (choose_day > 4 || choose_day < 1) {
-                     cout << "Please choose a number between 1 and 4.\n";
-                 }
-                 else {
-                     choose_day = choose_day - 1;
-                     break;
-                 }
-             }
-             catch (const std::invalid_argument & ia) {
-                 std::cerr << "\nInvalid argument: Please give an integer.\n";
-             }
-             
-         }
-
          cout << "And the answer is...\n";
-         if (Possible_Covid19_Infection(random_user, choose_day, patients_days)) {
+         if (Possible_Covid19_Infection(random_user, CURRENT_DAY, patients_days)) {
              cout << "\n The user was found near a Covid19 patient. Danger Zone.\n";
          }
          else {
@@ -870,7 +868,7 @@ day patients_days[4];
         
 
          while (true) {
-             cout << "\n Give a minimum stay duration(in minutes).\n";
+             cout << "\n Lastly, give a minimum stay duration(in minutes).\n";
              cin >> input;
              try {
                  min_stay_duration = stoi(input);
@@ -880,23 +878,8 @@ day patients_days[4];
                  std::cerr << "\nInvalid argument: Please give an interger.\n";
              }
          }
-         while (true) {
-             cout << "\n Lastly, choose a day between 1-4 in which the search will take place.\n";
-             cin >> input;
-             try {
-                 day_num = stoi(input);
-                 if (day_num > 4 || day_num < 1) {
-                     cout << "\n Give a number between 1 and 4. Please try again.\n";
-                 }
-                 else {
-                     break;
-                 }
-             }
-             catch (const std::invalid_argument & ia) {
-                 std::cerr << "\nInvalid argument: Please give an interger.\n";
-             }
-         }
-         results = Find_Crowded_Places(day_num, time_interval, square_region, min_stay_duration);
+         
+         results = Find_Crowded_Places(CURRENT_DAY, time_interval, square_region, min_stay_duration);
          cout << "\n" << results << " where found inside the square region, day and time interval you gave.\n";
          cout << "\nDo you want to repeat this function again? [y/n]\n";
          cin >> input;
@@ -914,10 +897,55 @@ day patients_days[4];
  }
 
  void function3_menu() {
-     for (int d = 0; d < 4; d++) {
-         days[d].Repair();
-         patients_days[d].Repair();
-     }
+     days[CURRENT_DAY].Repair();
+     patients_days[CURRENT_DAY].Repair();
+     
+ }
+
+ void Summarize_Trajection(int day_num, int daysbefore)
+ {
+     int days_before = daysbefore;
+     double centre_x, centre_y, current_x, current_y;
+     int d = day_num - daysbefore;
+
+         for (int p = 0; p < 40; p++) {
+             //current node is the next node of the centre
+             node* current = days[d].people[p].return_head();
+             current_x = atof(current->x.c_str());
+             current_y = atof(current->y.c_str());
+
+             // orizoume centre 
+             node* centre = days[d].people[p].return_head();
+             centre_x = atof(centre->x.c_str());
+             centre_y = atof(centre->y.c_str());
+             node* temp;
+
+
+             while ((current != NULL && current->next != NULL) && (centre != NULL && centre->next != NULL)) {
+                 centre_x = atof(centre->x.c_str());
+                 centre_y = atof(centre->y.c_str());
+                 current_x = atof(current->x.c_str());
+                 current_y = atof(current->y.c_str());
+                 // if current is in the radius, then delete current 
+                 if (abs(centre_x - current_x) < R && abs(centre_y - current_y) < R)
+                 {
+                     temp = current->next;
+                     current = temp->next;
+                     delete(temp);
+                 }
+                 // if current is outside the radius, then update centre and move current 
+                 else {
+                     centre->next = current;
+                     centre = centre->next;
+                     current = current->next;
+                 }
+             }centre->next = current;
+         }
+ }
+
+ void function4_menu() {
+
+     Summarize_Trajection(CURRENT_DAY, CURRENT_DAY-1);
  }
 
 int main()
@@ -927,7 +955,7 @@ int main()
     string to_arrive_x, to_arrive_y,current_x,current_y;  
     
 
-    //--------------------------------- <MAIN> -----------------------------------------
+    //--------------------------------------------------------- <MAIN> --------------------------------------------------------------------------------------
 
     main_menu();
 
@@ -935,25 +963,27 @@ int main()
 
     create_routes(dmin, dmax, 40, "users");
    
-    //-------------------------------------------SOME COVID19 PATIENTS (5)--------------------------------------------------
+    //-------------------------------------------------SOME COVID19 PATIENTS (5)-----------------------------------------------------------------------------
 
     create_routes(dmin, dmax, 40, "covid19");
 
-    //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
+    for (int d = 0; d < 4; d++) {
+        cout << "\n-------------------------- THIS IS DAY NUMBER: " << d+1 << " --------------------------------\n";
 
-    function3_menu();
+        CURRENT_DAY = d;
+
+        function3_menu();
+
+        function1_menu();
+
+        function2_menu();
+
+        if (d != 0) {
+            function4_menu();
+        }        
+    }
+
+    //-------------------------------------------------------- <\MAIN> -------------------------------------------------------------------------------------
     
-    //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
-    
-    function1_menu();
-   
-    //------------------------------------------------------- FUNCTION 2---------------------------------------------------------
-
-    function2_menu();
-
-    //--------------------------------- <\MAIN> -----------------------------------------
-    
-   
-
 }
 
