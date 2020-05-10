@@ -503,11 +503,12 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num,day covid19_p
     int counter = 0;
 
     for (int p = 0; p < 40;p++) {
-        //cout << "---------------------NEW PATIENT----------------------------\n";
+       // cout << "---------------------NEW PATIENT----------------------------\n";
         time_nearby = 0;
         counter = 0;
         node* patient = covid19_patients[day_num].people[p].return_head();
         node* user = person[day_num].return_head();
+
         while (user != NULL) {
             //temp patient and user
             node* temp_patient = patient;
@@ -545,48 +546,53 @@ bool Possible_Covid19_Infection(linked_list person[4], int day_num,day covid19_p
         if (day_num < 3) {
             node* patient = covid19_patients[day_num+1].people[p].return_head();
             node* user = person[day_num+1].return_head();
-            
-            while (((patient->x != to_string(person[day_num+1].getDestinationX())) || (patient->y != to_string(person[day_num+1].getDestinationY()))) && (user!=NULL && patient != NULL)) {
-                //cout << "-----------------------NEXT DAY--------------------------\n";
-                //temp patient and user
-                node* temp_patient = patient;
-                node* temp_user = user;
-                //setting user and patient coords
-                user_x = atof(user->x.c_str());
-                user_y = atof(user->y.c_str());
-                patient_x = atof(patient->x.c_str());
-                patient_y = atof(patient->y.c_str());
-                //checks if the user was in patients R at most 4 hours later, or less
-                int i = 0;
-                while (i < max_minutes_after * 2 && temp_user != NULL) {
-                //cout << "Node: " << counter << " | i: " << i << " | User_X: " << user_x << " | User_Y: " << user_y << " | Dest_X: " << person[day_num].getDestinationX() << " | Dest_Y: " << person[day_num].getDestinationY() << " | Time_NearBy: " << time_nearby << "\n";
-                    user_x = atof(temp_user->x.c_str());
-                    user_y = atof(temp_user->y.c_str());
-                    //check R
-                    if (abs(patient_x - user_x) <= R || abs(patient_y - user_y) <= R) {
-                        time_nearby += 1;
-                        user = temp_user;
-                        break;
-                    }
-                    //it must stop when user reaches his destination
-                    if ((patient->x == to_string(person[day_num].getDestinationX())) && (patient->y == to_string(person[day_num].getDestinationY()))) {
-                        if (time_nearby >= min_time_nearby * 2) {
-                            danger_zone = true;
-                            return danger_zone;
+            while (user != NULL && patient != NULL) {
+               if (((patient->x != to_string(person[day_num + 1].getDestinationX())) || (patient->y != to_string(person[day_num + 1].getDestinationY())))){
+                   // cout << "-----------------------NEXT DAY--------------------------\n";
+                    //temp patient and user
+                    node* temp_patient = patient;
+                    node* temp_user = user;
+                    //setting user and patient coords
+                    user_x = atof(user->x.c_str());
+                    user_y = atof(user->y.c_str());
+                    patient_x = atof(patient->x.c_str());
+                    patient_y = atof(patient->y.c_str());
+                    //checks if the user was in patients R at most 4 hours later, or less
+                    int i = 0;
+                    while (i < max_minutes_after * 2 && temp_user != NULL) {
+                        // cout << "Node: " << counter << " | i: " << i << " | User_X: " << user_x << " | User_Y: " << user_y << " | Dest_X: " << person[day_num].getDestinationX() << " | Dest_Y: " << person[day_num].getDestinationY() << " | Time_NearBy: " << time_nearby << "\n";
+                        user_x = atof(temp_user->x.c_str());
+                        user_y = atof(temp_user->y.c_str());
+                        //check R
+                        if (abs(patient_x - user_x) <= R || abs(patient_y - user_y) <= R) {
+                            time_nearby += 1;
+                            user = temp_user;
+                            break;
                         }
+                        //it must stop when user reaches his destination
+                        if ((patient->x == to_string(person[day_num].getDestinationX())) && (patient->y == to_string(person[day_num].getDestinationY()))) {
+                            if (time_nearby >= min_time_nearby * 2) {
+                                danger_zone = true;
+                                return danger_zone;
+                            }
+                        }
+                        else {
+                            temp_user = temp_user->next;
+                            i += 1;
+                        }
+
                     }
-                    else {
-                        temp_user = temp_user->next;
-                        i += 1;           
+                    if (time_nearby >= min_time_nearby * 2) {
+                        danger_zone = true;
+                        return danger_zone;
                     }
-                    
+                    user = user->next;
+                    patient = patient->next;
                 }
-                if (time_nearby >= min_time_nearby * 2) {
-                    danger_zone = true;
-                    return danger_zone;
-                }
-                user = user->next;
-                patient = patient->next;
+               else {
+                  break;
+               }
+                
             }
         }
         cout << "\n The user you gave had no interaction with patient: " << p+1 << ". There are "<<40-(p+1)<<" left to check. Please wait...\n";
@@ -642,6 +648,46 @@ day patients_days[4];
     }
 }
 
+ double dmin, dmax;
+
+ void main_menu() {
+     string input;
+     while (true) {
+         while (true) {
+             cout << "Please enter the min width : ";
+             cin >> input;
+             try {
+                 dmin = stod(input);
+                 break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an integer.\n";
+             }
+         }
+
+         while (true) {
+             cout << "Please enter the max width : ";
+             cin >> input;
+             try {
+                 dmax = stod(input);
+                 break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an integer.\n";
+             }
+         }
+         if (dmax > dmin) {
+             cout << "\nRoutes are being created. This proccess may take some minutes. Please wait...\n";
+             break;
+         }
+         else {
+             cout << "\nMaximum value must be greater than the minimum.\nPLease type again:\n\n";
+             dmin = NULL;
+             dmax = NULL;
+         }
+     }
+ }
+
  void function1_menu(){
      string input;
      int pos;
@@ -649,13 +695,20 @@ day patients_days[4];
      while (true) {
          cout << "\nChoose which user to examine for being in dangerous zone:\n Give a number between 1 and 40 to choose user.\n ";
          while (true) {
-             cin >> pos;
-             if (pos > 40 || pos < 1) {
-                 cout << "Please choose a number between 1 and 40.\n";
-             }
-             else {
-                 pos = pos - 1;
+             cin >> input;
+             try {
+                 pos = stod(input);
+                 if (pos > 40 || pos < 1) {
+                     cout << "Please choose a number between 1 and 40.\n";
+                 }
+                 else {
+                     pos = pos - 1;
+                     break;
+                 }
                  break;
+             }
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an integer.\n";
              }
          }
 
@@ -666,14 +719,21 @@ day patients_days[4];
          int choose_day;
          cout << "\nChoose a day in order to start searching. Choose a number between 1-4.\n ";
          while (true) {
-             cin >> choose_day;
-             if (choose_day > 4 || choose_day < 1) {
-                 cout << "Please choose a number between 1 and 4.\n";
+             cin >> input;
+             try {
+                 choose_day = stod(input);
+                 if (choose_day > 4 || choose_day < 1) {
+                     cout << "Please choose a number between 1 and 4.\n";
+                 }
+                 else {
+                     choose_day = choose_day - 1;
+                     break;
+                 }
              }
-             else {
-                 choose_day = choose_day - 1;
-                 break;
+             catch (const std::invalid_argument & ia) {
+                 std::cerr << "\nInvalid argument: Please give an integer.\n";
              }
+             
          }
 
          cout << "And the answer is...\n";
@@ -694,7 +754,6 @@ day patients_days[4];
          else {
              cout << "\nPlease answer y for yes or n for no.\n";
          }
-
      }
      
  }
@@ -708,7 +767,7 @@ day patients_days[4];
      if (time_interval[0] < 9) { start_time = "0" + to_string(time_interval[0]); }
      if (time_interval[1] < 9) { finish_time = "0" + to_string(time_interval[1]); }
      for (int p = 0; p < 40; p++) {
-         cout << "\n------------------------ NEW USER -----------------------------------\n";
+        // cout << "\n------------------------ NEW USER -----------------------------------\n";
          x1 = square_region[0];
          x2 = square_region[1];
          y1 = square_region[0];
@@ -722,7 +781,7 @@ day patients_days[4];
          }
          int i = 0;
         while(i < hours*120 && user != NULL) {
-             cout << "Time: " << user->hours << ":" << user->minutes << ":" << user->seconds << " | User_X: " << user->x << " | User_Y: " << user->y << " | X: " << x1 << " | Y:" << x2 << " | Duration: " << duration << " | Inside: " << user_inside<<"\n";
+             //cout << "Time: " << user->hours << ":" << user->minutes << ":" << user->seconds << " | User_X: " << user->x << " | User_Y: " << user->y << " | X: " << x1 << " | Y:" << x2 << " | Duration: " << duration << " | Inside: " << user_inside<<"\n";
              user_x = atof(user->x.c_str());
              user_y = atof(user->y.c_str());
              if ((user_x >= x1 && user_x <= x2) && (user_y >= y1 && user_y <= y2)) {
@@ -746,7 +805,7 @@ day patients_days[4];
      while (true) {
          cout << "\nIt's time to see how many users where found in a given square region of interest.\n";
          while (true) {
-             cout << "\nTo begin with, give the X coordinate of the square region you want to search in.(Double precision number.)\n";
+             cout << "\n To begin with, give the X coordinate of the square region you want to search in.(Double precision number.)\n";
              cin >> input;
              try {
                  square_region[0] = stod(input);
@@ -757,7 +816,7 @@ day patients_days[4];
              }
          }
          while (true) {
-             cout << "\nNow give the Y coordinate of the square region you want to search in.(Double precision number.)\n";
+             cout << "\n Now give the Y coordinate of the square region you want to search in.(Double precision number.)\n";
              cin >> input;
              try {
                  square_region[1] = stod(input);
@@ -767,43 +826,51 @@ day patients_days[4];
                  std::cerr << "\nInvalid argument: Please give a double precision number.\n";
              }
          }
+
          while (true) {
-             cout << "\nGive the an hour to start searching from. It must be a number between 0 - 23( which means 00:00:00 - 23:59:30).\n";
-             cin >> input;
-             try {
-                 time_interval[0] = stoi(input);
-                 if (time_interval[0] < 0 || time_interval[1] > 23) {
-                     cout << "\nTime must be a number between 0 - 23( which means 00:00:00 - 23:59:30).Please try again\n";
-                 }
-                 else {
-                     break;
-                 }   
-             }
-             catch (const std::invalid_argument & ia) {
-                 std::cerr << "\nInvalid argument: Please give an interger.\n";
-             }
-         }
-         while (true) {
-             cout << "\nNow give the the hour of to stop searching. It must be a number between 0 - 23( which means 00:00:00 - 23:59:30).\n";
-             cin >> input;
-             try {
-                 time_interval[1] = stoi(input);
-                 if (time_interval[0] < 0 || time_interval[1] > 23) {
-                     cout << "\nTime must be a number between 0 - 23( which means 00:00:00 - 23:59:30).Please try again\n";
-                     if (time_interval[1] <= time_interval[0]) {
-                         cout << "\n The ending hour must be greater than the starting one. Please try again.\n";
+             while (true) {
+                 cout << "\n Give the an hour to start searching from. It must be a number between 0 - 23( which means 00:00:00 - 23:59:30).\n";
+                 cin >> input;
+                 try {
+                     time_interval[0] = stoi(input);
+                     if (time_interval[0] < 0 || time_interval[0] > 23) {
+                         cout << "\n Time must be a number between 0 - 23( which means 00:00:00 - 23:59:30).Please try again\n";
+                     }
+                     else {
+                         break;
                      }
                  }
-                 else {
-                     break;
+                 catch (const std::invalid_argument & ia) {
+                     std::cerr << "\nInvalid argument: Please give an interger.\n";
                  }
              }
-             catch (const std::invalid_argument & ia) {
-                 std::cerr << "\nInvalid argument: Please give an interger.\n";
+             while (true) {
+                 cout << "\n Now give the the hour of to stop searching. It must be a number between 0 - 23( which means 00:00:00 - 23:59:30).\n";
+                 cin >> input;
+                 try {
+                     time_interval[1] = stoi(input);
+                     if (time_interval[1] < 0 || time_interval[1] > 23) {
+                         cout << "\n Time must be a number between 0 - 23( which means 00:00:00 - 23:59:30).Please try again\n";
+                     }
+                     else {
+                         break;
+                     }
+                 }
+                 catch (const std::invalid_argument & ia) {
+                     std::cerr << "\nInvalid argument: Please give an interger.\n";
+                 }
+             }
+             if (time_interval[1] <= time_interval[0]) {
+                 cout << "\n The ending hour must be greater than the starting one. Please try again.\n";
+             }
+             else {
+                 break;
              }
          }
+        
+
          while (true) {
-             cout << "\nGive a minimum stay duration(in minutes).\n";
+             cout << "\n Give a minimum stay duration(in minutes).\n";
              cin >> input;
              try {
                  min_stay_duration = stoi(input);
@@ -814,7 +881,7 @@ day patients_days[4];
              }
          }
          while (true) {
-             cout << "\nLastly, choose a day between 1-4 in which the search will take place.\n";
+             cout << "\n Lastly, choose a day between 1-4 in which the search will take place.\n";
              cin >> input;
              try {
                  day_num = stoi(input);
@@ -853,11 +920,8 @@ day patients_days[4];
      }
  }
 
-
-
 int main()
 {
-    double dmin, dmax;
     bool arrived;
     int pos;
     string to_arrive_x, to_arrive_y,current_x,current_y;  
@@ -865,22 +929,7 @@ int main()
 
     //--------------------------------- <MAIN> -----------------------------------------
 
-
-    while (true) {
-        cout << "Please enter the min width : ";
-        cin >> dmin;
-        cout << "Please enter the max width : ";
-        cin >> dmax;
-        if (dmax > dmin) {
-            cout << "\nRoutes are being created. This proccess may take some minutes. Please wait...\n";
-            break;
-        }
-        else {
-            cout << "\nMaximum value must be greater than the minimum.\nPLease type again:\n\n";
-            dmin = NULL;
-            dmax = NULL;
-        }
-    }
+    main_menu();
 
     //---------------------------------------------------- CREATING 40 USERS --------------------------------------------------------------------------------
 
