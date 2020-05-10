@@ -12,8 +12,8 @@ using namespace std;
 struct node {
 
     //katagrafi gewgrafikwn sintetagmenwn
-    string x, y, moving_to;
-    int notmoving;
+    string x, y, moving_to, would_be_x, would_be_y;
+    int node_number,notmoving,gps_failure_left, gps_failure_in_node;
 
     //wra katagrafis
     string hours, minutes, seconds;
@@ -46,7 +46,6 @@ public:
        
         string* timer;
         string* coor;
-        int notmoving;
         node* tmp = new node;
         tmp->next = NULL;
         tmp->previous = NULL;
@@ -58,11 +57,14 @@ public:
             tmp->hours = "00";
             tmp->minutes = "00";
             tmp->seconds = "00";
+            tmp->node_number = 0;
             setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
             setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
-            tmp->x = to_string(getDestinationX());
-            tmp->y = to_string(getDestinationY());
-            tmp->notmoving = 6;
+            tmp->x = to_string(getDestinationX()); tmp->would_be_x = tmp->x;
+            tmp->y = to_string(getDestinationY()); tmp->would_be_y = tmp->y;
+            tmp->notmoving = rand() % 20 + 6;
+            tmp->gps_failure_left = rand() % 10 + 2;
+            tmp->gps_failure_in_node = rand() % 2869 + 1;
             head = tmp;
             tail = tmp;
         }
@@ -73,32 +75,49 @@ public:
             tmp->hours = timer[0];
             tmp->minutes = timer[1];
             tmp->seconds = timer[2];
+            tmp->node_number = tail->node_number + 1;
+            tmp->gps_failure_in_node = tail->gps_failure_in_node;
+            tmp->gps_failure_left = tail->gps_failure_left;
 
             
             //Setting coordinates
             if (tail -> notmoving > 0)
             {
-                tmp->x = tail->x;
-                tmp->y = tail->y;
+                tmp->x = tail->x; tmp->would_be_x = tmp->x;
+                tmp->y = tail->y; tmp->would_be_y = tmp->y;
                 tmp->notmoving = tail->notmoving - 1;
 
             }
             else
             {
-                coor = get_coordinates(tail-> x,tail-> y);
-                tmp->x = coor[0];
-                tmp->y = coor[1];
-                //When destination is completed, give another one
-                if (tmp->x == to_string(getDestinationX()) && tmp->y == to_string(getDestinationY())) {
-                    tmp->notmoving = 5;//rand() % 40 + 120;
-                    setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
-                    setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
-                    tmp->moving_to = "MOVING TO: (" + to_string(getDestinationX())+ " : " + to_string(getDestinationY()) + ")";
+                if (tmp->gps_failure_left != -1 && tmp->node_number >= tmp->gps_failure_in_node) {
+                    tmp->x = "NO_DATA";
+                    tmp->y = "NO_DATA";
+                    coor = get_coordinates(tail->would_be_x, tail->would_be_y);
+                    tmp->would_be_x = coor[0]; tmp->would_be_y = coor[1];
+                    tmp->gps_failure_left = tail->gps_failure_left - 1;
+                    if (tmp->gps_failure_left == -1) {
+                        tmp->gps_failure_left = rand() % 10 + 2;
+                        tmp->gps_failure_in_node = rand() % 2869 + tmp->node_number;
+                        tmp->x = tmp->would_be_x;
+                        tmp->y = tmp->would_be_y;
+                    }
                 }
-
+                else {
+                    coor = get_coordinates(tail->x, tail->y);
+                    tmp->x = coor[0]; tmp->would_be_x = tmp->x;
+                    tmp->y = coor[1]; tmp->would_be_y = tmp->y;
+                    //When destination is completed, give another one
+                    if (tmp->x == to_string(getDestinationX()) && tmp->y == to_string(getDestinationY())) {
+                        tmp->notmoving = rand() % 40 + 120;
+                        setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
+                        setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
+                        tmp->moving_to = "MOVING TO: (" + to_string(getDestinationX()) + " : " + to_string(getDestinationY()) + ")";
+                    }
+                }
+               
             }
-           
-            
+                    
 
             //Setting linked list
             tail->next = tmp;
@@ -107,6 +126,7 @@ public:
         }
     }
 
+    //Handling next day if user has not arrived in destination by 23:59:30
     void add_node(string are_x, string are_y, string to_x, string to_y)
     {
 
@@ -123,10 +143,13 @@ public:
             tmp->hours = "00";
             tmp->minutes = "00";
             tmp->seconds = "00";
+            tmp->node_number = 0;
             setDestinationX(atof(to_x.c_str()));
             setDestinationY(atof(to_y.c_str()));
             tmp->x = are_x;
             tmp->y = are_y;
+            tmp->gps_failure_left = rand() % 10 + 2;
+            tmp->gps_failure_in_node = rand() % 2869 + 1;
             head = tmp;
             tail = tmp;
         }
@@ -273,8 +296,8 @@ public:
     void displayFromStart() {
         node* temp = head;
         while (temp != NULL) {
-            cout << "\n"<<temp->hours << ":" << temp->minutes << ":" << temp->seconds << "\n";
-            cout << "WE ARE AT: (" << temp->x << "," << temp->y << ")\n";
+            cout << "\n"<<temp->hours << ":" << temp->minutes << ":" << temp->seconds <<" | Node: "<<temp->node_number<< " | Will_fail_in_node: "<<temp->gps_failure_in_node<< " | For: "<< temp->gps_failure_left<<"\n";
+            cout << "WE ARE AT: (" << temp->x << "," << temp->y << ")"<<" | Would_be: ("<<temp->would_be_x<<" , " <<temp->would_be_y<<")\n";
             if (temp->moving_to != "")  cout << temp->moving_to + "\n\n";
             temp = temp->next;
         }
@@ -350,6 +373,126 @@ public:
      day(){
      }
 
+     void Repair() {
+         string current_x, current_y, to_go_x, to_go_y;
+         double* speed;
+         int time;
+         for (int p = 0; p < 40; p++) {
+             //cout << "-----------------------NEW PERSON-----------------------------------\n";
+             node* curr_person = this->people[p].return_head();
+             node* person = curr_person;
+             while (curr_person != NULL) {
+                // cout << "--------NEW NODE--------\n";
+                 person = curr_person;
+                 node* start_repair = new node;
+                 time = 1;
+                 //Find the first node that has no data
+                 while (person != NULL) {
+                     if (person->x == "NO_DATA") {
+                         current_x = person->previous->x;
+                         current_y = person->previous->y;
+                         start_repair = person;
+                         break;
+                     }
+                     else {
+                         person = person->next;
+                     }
+                     if (person != NULL) {
+                         //cout << "Node: " << person->node_number << " | Person_x: " << person->x << "\n";
+                     }             
+                 }
+                 //Find the last node that has no data
+                 while (person != NULL) {
+                     if (person->x != "NO_DATA") {
+                         to_go_x = person->x;
+                         to_go_y = person->y;
+                         curr_person = person;
+                         break;
+                     }
+                     time += 1;
+                     person = person->next;
+                 }
+                 if (person != NULL){
+                     //Repair the route
+                     person = start_repair;
+                     speed = get_speed(current_x, current_y, to_go_x, to_go_y, time);
+                     //Moves X
+                     for (int i = 0; i < speed[2]; i++) {
+                         if (stod(current_x) > stod(to_go_x)) {
+                             person->x = to_string(stod(current_x) - speed[0]);
+                             person->y = person->previous->y;
+                             current_x = person->x;
+                         }
+                         else if (stod(current_x) < stod(to_go_x)) {
+                             person->x = to_string(stod(current_x) + speed[0]);
+                             person->y = person->previous->y;
+                             current_x = person->x;
+                         }
+                         else { person->x = current_x; person->y = current_y; }
+                         person = person->next;
+                     }
+                     //Moves Y
+                     for (int i = 0; i < speed[3]; i++) {
+                         if (stod(current_y) > stod(to_go_y)) {
+                             person->y = to_string(stod(current_y) - speed[1]);
+                             person->x = person->previous->x;
+                             current_y = person->y;
+                         }
+                         else if (stod(current_y) < stod(to_go_y)) {
+                             person->y = to_string(stod(current_y) + speed[1]);
+                             person->x = person->previous->x;
+                             current_y = person->y;
+                         }
+                         else { person->x = current_x; person->y = current_y; }
+                         person = person->next;
+                     }
+                     curr_person = curr_person->next;
+                 }
+                 else { break; }                 
+             }
+             
+         }
+     }
+
+     double* get_speed(string p_cur_x, string p_cur_y,string p_go_x,string p_go_y,int p_time) {
+
+         double cur_x, cur_y, go_x, go_y, speed_x,speed_y,nodes_x,nodes_y;
+         double* coor = new double[4];
+
+         cur_x = stod(p_cur_x); 
+         cur_y = stod(p_cur_y);
+         go_x = stod(p_go_x);
+         go_y = stod(p_go_y);
+         
+         speed_x = abs(cur_x - go_x);
+         speed_y = abs(cur_y - go_y);
+
+         if (p_time % 2 == 0) {
+             nodes_x = p_time / 2; nodes_y = nodes_x;
+             speed_x = speed_x / (p_time / 2);
+             speed_y = speed_y / (p_time / 2);
+         }
+         else {
+             if (speed_x > speed_y) {
+                 nodes_x = (abs(p_time / 2) + 1); nodes_y = abs(p_time / 2);
+                 speed_x = speed_x / (abs(p_time / 2 )+1);
+                 speed_y = speed_y / abs(p_time / 2);
+             }
+             else {
+                 nodes_x = abs(p_time / 2 ); nodes_y = (abs(p_time / 2) + 1);
+                 speed_y = speed_y / (abs(p_time / 2) + 1);
+                 speed_x = speed_x / abs(p_time / 2);
+             }
+         }
+
+         coor[0] = speed_x;
+         coor[1] = speed_y;
+         coor[2] = nodes_x;
+         coor[3] = nodes_y;
+         return coor;
+
+
+     }
 };
 
 bool Possible_Covid19_Infection(linked_list person[4], int day_num,day covid19_patients[4]) {
@@ -703,6 +846,15 @@ day patients_days[4];
    
  }
 
+ void function3_menu() {
+     for (int d = 0; d < 4; d++) {
+         days[d].Repair();
+         patients_days[d].Repair();
+     }
+ }
+
+
+
 int main()
 {
     double dmin, dmax;
@@ -733,14 +885,18 @@ int main()
     //---------------------------------------------------- CREATING 40 USERS --------------------------------------------------------------------------------
 
     create_routes(dmin, dmax, 40, "users");
-    
+   
     //-------------------------------------------SOME COVID19 PATIENTS (5)--------------------------------------------------
 
     create_routes(dmin, dmax, 40, "covid19");
+
+    //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
+
+    function3_menu();
     
     //------------------------------------------------------- FUNCTION 1---------------------------------------------------------
     
-    //function1_menu();
+    function1_menu();
    
     //------------------------------------------------------- FUNCTION 2---------------------------------------------------------
 
