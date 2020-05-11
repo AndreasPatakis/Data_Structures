@@ -13,7 +13,7 @@ struct node {
 
     //katagrafi gewgrafikwn sintetagmenwn
     string x, y, moving_to, would_be_x, would_be_y;
-    int node_number,notmoving,gps_failure_left, gps_failure_in_node;
+    int node_number, notmoving, gps_failure_left, gps_failure_in_node;
 
     //wra katagrafis
     string hours, minutes, seconds;
@@ -26,11 +26,13 @@ struct node {
 class linked_list
 {
 private:
+    //create head node and tail node to hold first and last nodes
     node* head, * tail;
-    double dimension, dmin, dmax;
+    double dmin, dmax;
     double endX, endY;
 
 public:
+    //declare values in the constructor
     linked_list()
     {
         head = NULL;
@@ -41,30 +43,233 @@ public:
         endY = 0;
     }
 
+    //create setters for the private attributes
+
+    void setMinCoordinate(double dmin)
+    {
+        this->dmin = dmin;
+    }
+
+    void setMaxCoordinate(double dmax)
+    {
+        this->dmax = dmax;
+    }
+
+    void setDestinationX(double tx)
+    {
+        this->endX = tx;
+    }
+
+    void setDestinationY(double ty)
+    {
+        this->endY = ty;
+    }
+
+    //create getters to return private attributes
+
+    double getMinCoordinate()
+    {
+        return this->dmin;
+    }
+
+    double getMaxCoordinate()
+    {
+        return this->dmax;
+    }
+
+    double getDestinationX()
+    {
+        return this->endX;
+    }
+
+    double getDestinationY()
+    {
+        return this->endY;
+    }
+
+    //return the coordinates of the last node of the linked list
+    string get_tail_x() {
+        return tail->x;
+    }
+
+    string get_tail_y() {
+        return tail->y;
+    }
+
+    //return the first and last node;
+    node* return_tail() {
+        return tail;
+    }
+
+    node* return_head() {
+        return head;
+    }
+
+    //return a random double between 2 doubles
+    double fRand(double fMin, double  fMax)
+    {
+        double f = (double)rand() / RAND_MAX;
+        return fMin + f * (fMax - fMin);
+    }
+
+
+    string* get_coordinates(string p_x, string p_y) {
+        double x, y;
+        double speed, distance;
+        string* coor = new string[2];
+
+        //casting from string tou double
+        x = atof(p_x.c_str());
+        y = atof(p_y.c_str());
+
+        //speed between 3-6 km/h is approximately 0.008-0.016cm/s
+        speed = fRand(0.008, 0.016);
+
+
+        /*speed = distance/time
+        so distance = speed*time
+        and we get coordinates after 30 seconds */
+        distance = speed * 30;
+
+
+        //Generate a random way of walk
+
+        int random = rand() % 2;
+        double tmp;
+
+        /* change coordinates
+          If the user hasn't reach destinaton and
+          if the random number 0 the user will walk and y'y first.
+          Else if the the user hasn't reach destinaton and
+          and if random number is 1 the user will walk the x'x first. */
+
+        if (random == 0 || (x == getDestinationX() && y != getDestinationY()))
+        {
+            if (y > getDestinationY())
+            {
+                tmp = y - distance;
+                if (tmp > getDestinationY())
+                    y = tmp;
+                else y = getDestinationY();
+            }
+
+            else  if (y < getDestinationY())
+            {
+                tmp = y + distance;
+                if (tmp < getDestinationY())
+                    y = tmp;
+                else y = getDestinationY();
+            }
+        }
+        else if (random == 1 || (y == getDestinationY() && x != getDestinationY()))
+        {
+
+            if (x > getDestinationX())
+            {
+                tmp = x - distance;
+                if (tmp > getDestinationX())
+                    x = tmp;
+                else x = getDestinationX();
+            }
+
+            else  if (x < getDestinationX())
+            {
+                tmp = x;
+                tmp = x + distance;
+                if (tmp < getDestinationX())
+                    x = tmp;
+                else x = getDestinationX();
+            }
+        }
+
+        //display coordinates with strings
+        coor[0] = to_string(x);
+        coor[1] = to_string(y);
+
+        return coor;
+    }
+
+
+    string* get_time(string p_hour, string p_minute, string p_sec) {
+        int hour, minute, sec;
+        string* time = new string[3];
+
+        //casting from string tou int
+        hour = stoi(p_hour);
+        minute = stoi(p_minute);
+        sec = stoi(p_sec);
+
+
+        //change time
+        if (sec == 30) {
+            sec = 0;
+            if (minute == 59) {
+                minute = 0;
+                if (hour == 23) {
+                    hour = 0;
+                }
+                else {
+                    hour += 1;
+                }
+            }
+            else {
+                minute += 1;
+            }
+        }
+        else {
+            sec = 30;
+        }
+
+        //display time with strings
+        time[0] = to_string(hour);
+        time[1] = to_string(minute);
+        time[2] = to_string(sec);
+
+        //if the time has only 1 number , for example the number x, make it "0x"
+        if (time[0].length() == 1) time[0].insert(0, "0");
+        if (time[1].length() == 1) time[1].insert(0, "0");
+        if (time[2].length() == 1) time[2].insert(0, "0");
+
+        return time;
+    }
+
     void add_node()
     {
-       
         string* timer;
         string* coor;
+
+        //create a new temp node
         node* tmp = new node;
         tmp->next = NULL;
         tmp->previous = NULL;
-        
-      
 
+
+        //if the linked list is empty
         if (head == NULL)
         {
+            //declare values
+
+            //first time of the day
             tmp->hours = "00";
             tmp->minutes = "00";
             tmp->seconds = "00";
             tmp->node_number = 0;
+
+            //random coordinates
             setDestinationX(fRand(getMinCoordinate(), getMaxCoordinate()));
             setDestinationY(fRand(getMinCoordinate(), getMaxCoordinate()));
-            tmp->x = to_string(getDestinationX()); tmp->would_be_x = tmp->x;
-            tmp->y = to_string(getDestinationY()); tmp->would_be_y = tmp->y;
+            tmp->x = to_string(getDestinationX());
+            tmp->would_be_x = tmp->x;
+            tmp->y = to_string(getDestinationY());
+            tmp->would_be_y = tmp->y;
+
+            /*random declare the minutes that remain still , the node where the gps 
+            signal will be lost and for how many nodes will be kept lost*/
             tmp->notmoving = rand() % 20 + 6;
             tmp->gps_failure_left = rand() % 10 + 2;
             tmp->gps_failure_in_node = rand() % 2869 + 1;
+
+            //create a head node 
             head = tmp;
             tail = tmp;
         }
@@ -79,9 +284,9 @@ public:
             tmp->gps_failure_in_node = tail->gps_failure_in_node;
             tmp->gps_failure_left = tail->gps_failure_left;
 
-            
+
             //Setting coordinates
-            if (tail -> notmoving > 0)
+            if (tail->notmoving > 0)
             {
                 tmp->x = tail->x; tmp->would_be_x = tmp->x;
                 tmp->y = tail->y; tmp->would_be_y = tmp->y;
@@ -115,9 +320,9 @@ public:
                         tmp->moving_to = "MOVING TO: (" + to_string(getDestinationX()) + " : " + to_string(getDestinationY()) + ")";
                     }
                 }
-               
+
             }
-                    
+
 
             //Setting linked list
             tail->next = tmp;
@@ -173,200 +378,17 @@ public:
         }
     }
 
-   
-    string* get_coordinates(string p_x, string p_y) {
-
-
-        double x, y;
-        double speed, distance;
-        string* coor = new string[2];
-        
-        x = atof(p_x.c_str());
-        y = atof(p_y.c_str());
-
-        //speed between 3-6 km/h castin in cm/s
-        speed = fRand(0.008, 0.016);
-
-       
-        //radius of the circle is the distance
-        distance = speed * 30;
-        double tmp;
-       
-      //generate a random way of walk
-        int tixeos = rand() % 2;
-
-       //if the random number is 0 tha kinithei prwta ston aksona y , an eine 1 ston x
-        if (tixeos == 0 || (x == getDestinationX() && y != getDestinationY()))
-        {
-            if (y > getDestinationY())
-            {
-                tmp = y - distance;
-                if (tmp > getDestinationY())
-                    y = tmp;
-                else y = getDestinationY();
-            }
-
-            else  if (y < getDestinationY())
-            {
-                tmp = y;
-                tmp = y + distance;
-                if (tmp < getDestinationY())
-                    y = tmp;
-                else y = getDestinationY();
-            }
-        }
-        else if (tixeos == 1 || (y == getDestinationY() && x != getDestinationY()))
-        {
-
-            if (x > getDestinationX())
-            {
-                tmp = x - distance;
-                if (tmp > getDestinationX())
-                    x = tmp;
-                else x = getDestinationX();
-            }
-
-            else  if (x < getDestinationX())
-            {
-                tmp = x;
-                tmp = x + distance;
-                if (tmp < getDestinationX())
-                    x = tmp;
-                else x = getDestinationX();
-            }
-        }
-                      
-   
-        coor[0] = to_string(x);
-        coor[1] = to_string(y);
-       
-        if (coor[0].length() == 1) coor[0].insert(0, "0");
-        if (coor[1].length() == 1) coor[1].insert(0, "0");
-        return coor;
-       
-
-    }
-
-
-    string* get_time(string p_hour, string p_minute, string p_sec) {
-        int hour, minute, sec;
-        string* time = new string[3];
-        hour = stoi(p_hour);
-        minute = stoi(p_minute);
-        sec = stoi(p_sec);
-        //change time
-        if (sec == 30) {
-            sec = 0;
-            if (minute == 59) {
-                minute = 0;
-                if (hour == 23) {
-                    hour = 0;
-                }
-                else {
-                    hour += 1;
-                }
-            }
-            else {
-                minute += 1;
-            }
-        }
-        else {
-            sec = 30;
-        }
-        //display time with strings
-        time[0] = to_string(hour);
-        time[1] = to_string(minute);
-        time[2] = to_string(sec);
-        if (time[0].length() == 1) time[0].insert(0, "0");
-        if (time[1].length() == 1) time[1].insert(0, "0");
-        if (time[2].length() == 1) time[2].insert(0, "0");
-
-        return time;
-    }
-
-
-    node* return_tail() {
-        return tail;
-    }
-
-    node* return_head() {
-        return head;
-    }
-
     void displayFromStart() {
         node* temp = head;
         while (temp != NULL) {
-            cout << "\n"<<temp->hours << ":" << temp->minutes << ":" << temp->seconds <<" | Node: "<<temp->node_number<< " | Will_fail_in_node: "<<temp->gps_failure_in_node<< " | For: "<< temp->gps_failure_left<<"\n";
-            cout << "WE ARE AT: (" << temp->x << "," << temp->y << ")"<<" | Would_be: ("<<temp->would_be_x<<" , " <<temp->would_be_y<<")\n";
+            cout << "\n" << temp->hours << ":" << temp->minutes << ":" << temp->seconds << " | Node: " << temp->node_number << " | Will_fail_in_node: " << temp->gps_failure_in_node << " | For: " << temp->gps_failure_left << "\n";
+            cout << "WE ARE AT: (" << temp->x << "," << temp->y << ")" << " | Would_be: (" << temp->would_be_x << " , " << temp->would_be_y << ")\n";
             if (temp->moving_to != "")  cout << temp->moving_to + "\n\n";
             temp = temp->next;
         }
+
     }
-
-
-    double fRand(double fMin, double  fMax)
-    {
-        double f = (double)rand() / RAND_MAX;
-        return fMin + f * (fMax - fMin);
-    }
-
-   
-
-    void setMinCoordinate(double dmin)
-    {
-        this->dmin = dmin;
-    }
-
-    void setMaxCoordinate(double dmax)
-    {
-        this->dmax = dmax;
-    }
-
-    void setDestinationX(double tx)
-    {
-        this->endX = tx;
-    }
-
-    void setDestinationY(double ty)
-    {
-        this->endY = ty;
-    }
-
-    double getDimension()
-    {
-        return abs(getMaxCoordinate()) - abs(getMinCoordinate());
-    }
-
-    double getMinCoordinate()
-    {
-        return this->dmin;
-    }
-
-     double getMaxCoordinate()
-    {
-        return this->dmax;
-    }
-
-     double getDestinationX()
-     {
-         return this->endX;
-     }
-
-     double getDestinationY()
-     {
-         return this->endY;
-     }
-
-     string get_tail_x() {
-         return tail->x;
-     }
-
-     string get_tail_y() {
-         return tail->y;
-     }
-    
 };
-
 class day {
 public:
     linked_list people[40];
