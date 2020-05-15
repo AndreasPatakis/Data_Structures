@@ -1,0 +1,15 @@
+﻿  Data_Structures.cpp
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(666,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(678,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(692,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(718,28): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(728,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(800,28): warning C4101: 'day_num': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(812,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(823,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(841,55): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(857,55): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(877,51): warning C4101: 'ia': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(954,9): warning C4101: 'pos': unreferenced local variable
+C:\Users\takis\source\repos\Data_Structures\Data_Structures\Data_Structures.cpp(953,10): warning C4101: 'arrived': unreferenced local variable
+  Data_Structures.vcxproj -> C:\Users\takis\source\repos\Data_Structures\Debug\Data_Structures.exe
